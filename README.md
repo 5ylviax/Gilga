@@ -1,6 +1,6 @@
 # Gilga
 
-# Movement 
+# Movement for my character 
 riochet- every time it hits a edge of the platform it takes a different direction
 
 
