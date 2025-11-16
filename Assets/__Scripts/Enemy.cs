@@ -4,13 +4,18 @@ using UnityEngine;
 
 public class Enemy : MonoBehaviour
 {
+    [Header("Health")]
+    [Range(1, 5)]
+    public int maxHealth = 3;   // set this 1–5 in Inspector
+    private int currentHealth;
+
     [Header("Movement Settings")]
     [Range(0f, 30f)]
     public float speed = 15f;           // overall movement speed
-    public float bounceOffset = 0.2f;  // how far inside the bounds to bounce
+    public float bounceOffset = 0.2f;   // how far inside the bounds to bounce
     public bool debugBounds = false;
 
-    private Vector3 moveDir;           // current direction of motion
+    private Vector3 moveDir;           
     private BoundsCheck bndCheck;
     private Renderer platformRenderer;
     private float xMin, xMax, zMin, zMax;
@@ -18,6 +23,8 @@ public class Enemy : MonoBehaviour
 
     void Start()
     {
+        currentHealth = maxHealth; // start at full health
+
         bndCheck = GetComponent<BoundsCheck>();
         SetupBounds();
 
@@ -34,6 +41,23 @@ public class Enemy : MonoBehaviour
         if (boundsReady)
             Move();
     }
+
+    // ---- NEW: called by projectiles ----
+    public void TakeDamage(int amount)
+    {
+        currentHealth -= amount;
+        if (currentHealth <= 0)
+        {
+            Die();
+        }
+    }
+
+    void Die()
+    {
+        // TODO: play VFX / SFX here if you want
+        Destroy(gameObject);
+    }
+    // ------------------------------------
 
     void SetupBounds()
     {
@@ -66,19 +90,30 @@ public class Enemy : MonoBehaviour
         Vector3 pos = transform.position;
         pos += moveDir * speed * Time.deltaTime;
 
-        // Check for collisions with bounds and reflect
         if (pos.x <= xMin || pos.x >= xMax)
         {
-            moveDir.x *= -1; // reflect horizontally
+            moveDir.x *= -1;
             pos.x = Mathf.Clamp(pos.x, xMin, xMax);
         }
 
         if (pos.z <= zMin || pos.z >= zMax)
         {
-            moveDir.z *= -1; // reflect vertically (front/back)
+            moveDir.z *= -1;
             pos.z = Mathf.Clamp(pos.z, zMin, zMax);
         }
 
         transform.position = pos;
+    }
+
+    void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("Player"))
+        {
+            Player player = other.GetComponent<Player>();
+            if (player != null)
+            {
+                player.TakeDamage(1);   // lose 1 HP per bump
+            }
+        }
     }
 }

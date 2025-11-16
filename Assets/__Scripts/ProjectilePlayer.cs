@@ -7,8 +7,9 @@ public class ProjectilePlayer : MonoBehaviour
     [Header("Settings")]
     public float speed = 40f;
     public float lifetime = 5f;
-    public float damage = 10f;
-    public Transform platform; // assign your platform in inspector!
+    [Min(1)]
+    public int damage = 1;          // how much damage this projectile does
+    public Transform platform;      // assign your platform in inspector!
 
     private Rigidbody rb;
     private Bounds platformBounds;
@@ -50,7 +51,6 @@ public class ProjectilePlayer : MonoBehaviour
             Vector3 flatMin = platformBounds.min;
             Vector3 flatMax = platformBounds.max;
 
-            // Clamp Y between the bounds so height is ignored
             flatPos.y = Mathf.Clamp(flatPos.y, flatMin.y, flatMax.y);
 
             if (!platformBounds.Contains(flatPos))
@@ -62,11 +62,15 @@ public class ProjectilePlayer : MonoBehaviour
 
     void OnTriggerEnter(Collider other)
     {
-        // Only destroy when hitting enemies or obstacles, not player or platform
         if (other.CompareTag("Enemy"))
         {
-            // TODO: Damage logic
-            Destroy(gameObject);
+            Enemy enemy = other.GetComponent<Enemy>();
+            if (enemy != null)
+            {
+                enemy.TakeDamage(damage);   // apply damage
+            }
+
+            Destroy(gameObject);            // bullet disappears on hit
         }
         else if (!other.CompareTag("Player") && !other.CompareTag("Platform"))
         {
