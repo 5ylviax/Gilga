@@ -33,9 +33,10 @@ public class Player : MonoBehaviour
 
     void Start()
     {
-        rb = GetComponent<Rigidbody>();
-        rb.interpolation = RigidbodyInterpolation.Interpolate;
-        rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
+        S = this;
+        rb = GetComponent<Rigidbody>();   // <-- NEW
+        currentHealth = maxHealth;
+        Debug.Log($"Player HP = {currentHealth}");
     }
 
     void Update()
@@ -73,29 +74,29 @@ public class Player : MonoBehaviour
 
     void Die()
     {
-    if (isDead) return;
-    isDead = true;
+        if (isDead) return;
+        isDead = true;
 
-    Debug.Log("Player died");
+        Debug.Log("Player died");
 
-    // Stop movement immediately
-    Rigidbody rb = GetComponent<Rigidbody>();
-    if (rb != null) rb.velocity = Vector3.zero;
+        // Stop movement immediately
+        Rigidbody rb = GetComponent<Rigidbody>();
+        if (rb != null) rb.velocity = Vector3.zero;
 
-    // Start the reload coroutine (needs the object to stay active)
-    StartCoroutine(ReloadSceneAfterDelay(1.5f));
+        // Start the reload coroutine (needs the object to stay active)
+        StartCoroutine(ReloadSceneAfterDelay(1.5f));
 
-    // HIDE the player visually
-    foreach (Renderer r in GetComponentsInChildren<Renderer>())
-    {
-        r.enabled = false;
-    }
+        // HIDE the player visually
+        foreach (Renderer r in GetComponentsInChildren<Renderer>())
+        {
+            r.enabled = false;
+        }
 
-    // Disable colliders so you can't interact anymore
-    foreach (Collider c in GetComponentsInChildren<Collider>())
-    {
-        c.enabled = false;
-    }
+        // Disable colliders so you can't interact anymore
+        foreach (Collider c in GetComponentsInChildren<Collider>())
+        {
+            c.enabled = false;
+        }
     }
 
 

@@ -975,6 +975,14 @@ PrefabInstance:
       propertyPath: m_Name
       value: _Player
       objectReference: {fileID: 0}
+    - target: {fileID: 9118691766209358689, guid: 728b7e6cda86d3c499d510fa33fda5cf, type: 3}
+      propertyPath: m_UseGravity
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 9118691766209358689, guid: 728b7e6cda86d3c499d510fa33fda5cf, type: 3}
+      propertyPath: m_IsKinematic
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 9118691766209358692, guid: 728b7e6cda86d3c499d510fa33fda5cf, type: 3}
       propertyPath: cam
       value: 
