@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 7587875396929425802}
   m_Layer: 0
   m_Name: Player
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -102,7 +102,7 @@ GameObject:
   - component: {fileID: 9118691766209358693}
   m_Layer: 0
   m_Name: _Player
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -173,7 +173,8 @@ MonoBehaviour:
   hardpoint: {fileID: 9118691767279344787}
   projectilePrefab: {fileID: 718777457962277896, guid: a6ece521f79591d4f9c11ebb30b68e8b, type: 3}
   fireRate: 0.25
-  projectileSpeed: 40
+  projectileSpeed: 60
+  maxHealth: 5
   shieldLevel: 1
 --- !u!114 &9118691766209358693
 MonoBehaviour:

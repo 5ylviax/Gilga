@@ -60,21 +60,37 @@ public class ProjectilePlayer : MonoBehaviour
         }
     }
 
-    void OnTriggerEnter(Collider other)
+        void OnTriggerEnter(Collider other)
     {
+        // 1) Damage enemy
         if (other.CompareTag("Enemy"))
         {
             Enemy enemy = other.GetComponent<Enemy>();
             if (enemy != null)
             {
-                enemy.TakeDamage(damage);   // apply damage
+                enemy.TakeDamage(damage);
             }
 
-            Destroy(gameObject);            // bullet disappears on hit
+            Destroy(gameObject);  // bullet disappears on hit
+            return;
         }
-        else if (!other.CompareTag("Player") && !other.CompareTag("Platform"))
+
+        // 2) Destroyable enemy projectile (red)
+        ProjectileEnemy enemyProj = other.GetComponent<ProjectileEnemy>();
+        if (enemyProj != null && enemyProj.destroyableByPlayer)
         {
+            // Red shot: both projectiles disappear
+            Destroy(enemyProj.gameObject);
+            Destroy(gameObject);
+            return;
+        }
+
+        // 3) Default: bullet disappears on anything except player/platform
+        if (!other.CompareTag("Player") && !other.CompareTag("Platform"))
+        {
+            // This will also destroy when hitting future "Cover" cubes
             Destroy(gameObject);
         }
     }
+
 }

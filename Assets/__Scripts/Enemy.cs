@@ -21,16 +21,28 @@ public class Enemy : MonoBehaviour
     private float xMin, xMax, zMin, zMax;
     private bool boundsReady = false;
 
+    [Header("Shooting")]
+    public GameObject redProjectilePrefab;
+    public GameObject blackProjectilePrefab;
+    public float fireIntervalMin = 1.5f;
+    public float fireIntervalMax = 3f;
+    public float projectileSpeed = 25f;
+    public float projectileSpawnHeight = 0.5f;
+
+    private float nextShotTime;
+
     void Start()
     {
-        currentHealth = maxHealth; // start at full health
+        currentHealth = maxHealth;
 
         bndCheck = GetComponent<BoundsCheck>();
         SetupBounds();
 
-        // start moving at a random diagonal angle
         float angle = Random.Range(0f, 360f) * Mathf.Deg2Rad;
         moveDir = new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle)).normalized;
+
+        // NEW: first shot time
+        nextShotTime = Time.time + Random.Range(fireIntervalMin, fireIntervalMax);
     }
 
     void Update()
@@ -39,7 +51,10 @@ public class Enemy : MonoBehaviour
             SetupBounds();
 
         if (boundsReady)
+        {
             Move();
+            TryShootAtPlayer();     // NEW
+        }
     }
 
     // ---- NEW: called by projectiles ----
@@ -115,5 +130,43 @@ public class Enemy : MonoBehaviour
                 player.TakeDamage(1);   // lose 1 HP per bump
             }
         }
+    }
+
+    void TryShootAtPlayer()
+    {
+        if (Time.time < nextShotTime) return;
+        if (Player.S == null) return;   // no player yet
+
+        Vector3 dir = Player.S.transform.position - transform.position;
+        dir.y = 0f;
+
+        if (dir.sqrMagnitude < 0.01f) return;  // too close / invalid
+
+        dir.Normalize();
+        Quaternion rot = Quaternion.LookRotation(dir);
+
+        // Choose red or black projectile
+        bool useRed = (Random.value < 0.5f);
+        GameObject prefabToUse = null;
+
+        if (useRed && redProjectilePrefab != null)
+            prefabToUse = redProjectilePrefab;
+        else if (!useRed && blackProjectilePrefab != null)
+            prefabToUse = blackProjectilePrefab;
+
+        if (prefabToUse == null) return;
+
+        Vector3 spawnPos = transform.position + dir * 1f + Vector3.up * projectileSpawnHeight;
+        GameObject projGO = Instantiate(prefabToUse, spawnPos, rot);
+
+        ProjectileEnemy proj = projGO.GetComponent<ProjectileEnemy>();
+        if (proj != null)
+        {
+            proj.speed = projectileSpeed;
+            proj.damage = 1;                   // enemy shots always do 1 dmg
+            proj.destroyableByPlayer = useRed; // red = destroyable, black = not
+        }
+
+        nextShotTime = Time.time + Random.Range(fireIntervalMin, fireIntervalMax);
     }
 }

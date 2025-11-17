@@ -503,6 +503,12 @@ MonoBehaviour:
   speed: 15
   bounceOffset: 0.2
   debugBounds: 1
+  redProjectilePrefab: {fileID: 718777457962277896, guid: 2a3e75d3a04d76e4b98cfef4a939ffa2, type: 3}
+  blackProjectilePrefab: {fileID: 718777457962277896, guid: 4a4ab06e97c05184890e81526a2e28e5, type: 3}
+  fireIntervalMin: 1.5
+  fireIntervalMax: 3
+  projectileSpeed: 25
+  projectileSpawnHeight: 0.5
 --- !u!54 &1108045831
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -670,6 +676,10 @@ PrefabInstance:
       propertyPath: cam
       value: 
       objectReference: {fileID: 963194227}
+    - target: {fileID: 9118691766209358692, guid: 728b7e6cda86d3c499d510fa33fda5cf, type: 3}
+      propertyPath: projectileSpeed
+      value: 80
+      objectReference: {fileID: 0}
     - target: {fileID: 9118691766209358693, guid: 728b7e6cda86d3c499d510fa33fda5cf, type: 3}
       propertyPath: platform
       value: 

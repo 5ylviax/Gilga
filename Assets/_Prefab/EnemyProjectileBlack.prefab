@@ -13,9 +13,9 @@ GameObject:
   - component: {fileID: 718777457962277898}
   - component: {fileID: 718777457962277899}
   - component: {fileID: 718777457962277903}
-  - component: {fileID: 7150724699453531988}
+  - component: {fileID: -4883159329628352149}
   m_Layer: 7
-  m_Name: Projectile
+  m_Name: EnemyProjectileBlack
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -64,7 +64,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: 1d73c6d5cd9023342ba2e55a4d889b8d, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -115,7 +115,7 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!114 &7150724699453531988
+--- !u!114 &-4883159329628352149
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -124,10 +124,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 718777457962277896}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6ab66f4b6b61c474fa82fcb662c52f2f, type: 3}
+  m_Script: {fileID: 11500000, guid: 0215ba021abe8e845a0349c40036e2d3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speed: 40
-  lifetime: 3
+  speed: 20
+  lifetime: 5
   damage: 1
+  destroyableByPlayer: 1
   platform: {fileID: 0}
