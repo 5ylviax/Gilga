@@ -17,3 +17,8 @@ riochet- every time it hits a edge of the platform it takes a different directio
     - both hurts the player 
 # Extra 
 - for hardcore makes player dodge 
+
+#Issue 
+-When player spawn in the middle in the round where the coverlayer is located. player gets stuck in the coverlayer 
+- player passing throught the enemy with phy on when off enemy bounces up and off the map 
+- player passing through Cover

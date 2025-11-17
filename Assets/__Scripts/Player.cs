@@ -33,16 +33,15 @@ public class Player : MonoBehaviour
 
     void Start()
     {
-        S = this;
-        rb = GetComponent<Rigidbody>();   // <-- NEW
-        currentHealth = maxHealth;
-        Debug.Log($"Player HP = {currentHealth}");
+        rb = GetComponent<Rigidbody>();
+        rb.interpolation = RigidbodyInterpolation.Interpolate;
+        rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
     }
 
     void Update()
     {
         if (isDead) return;
-
+        HandleMovement();
         HandleRotation();
         HandleShooting();
     }
@@ -55,8 +54,6 @@ public class Player : MonoBehaviour
             if (rb != null) rb.velocity = Vector3.zero;
             return;
         }
-
-        HandleMovement();
     }
 
     public void TakeDamage(int amount)
@@ -116,22 +113,12 @@ public class Player : MonoBehaviour
         float hAxis = Input.GetAxisRaw("Horizontal");
         float vAxis = Input.GetAxisRaw("Vertical");
 
-        Vector3 inputDir = new Vector3(hAxis, 0f, vAxis);
+        Vector3 pos = transform.position;
 
-        // so diagonal isn’t faster
-        if (inputDir.sqrMagnitude > 1f)
-            inputDir.Normalize();
+        pos.x += hAxis * speed * Time.deltaTime;
+        pos.z += vAxis * speed * Time.deltaTime;
 
-        if (rb != null)
-        {
-            Vector3 vel = inputDir * speed;          // units per second
-            rb.velocity = new Vector3(vel.x, rb.velocity.y, vel.z);
-        }
-        else
-        {
-            // fallback (almost never used)
-            transform.position += inputDir * speed * Time.deltaTime;
-        }
+        transform.position = pos;
     }
 
 

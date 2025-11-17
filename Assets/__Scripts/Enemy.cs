@@ -45,7 +45,7 @@ public class Enemy : MonoBehaviour
         rb = GetComponent<Rigidbody>();
         if (rb != null)
         {
-            rb.isKinematic = true;
+            rb.isKinematic = false;
             rb.useGravity = false;
         }
 
