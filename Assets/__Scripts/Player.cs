@@ -29,21 +29,34 @@ public class Player : MonoBehaviour
     // NEW: track if the player is dead
     private bool isDead = false;
 
+    private Rigidbody rb;
+
     void Start()
     {
         S = this;
+        rb = GetComponent<Rigidbody>();   // <-- NEW
         currentHealth = maxHealth;
         Debug.Log($"Player HP = {currentHealth}");
     }
 
     void Update()
     {
-        // If dead, ignore all input & movement
         if (isDead) return;
 
-        HandleMovement();
         HandleRotation();
         HandleShooting();
+    }
+
+        void FixedUpdate()
+    {
+        if (isDead)
+        {
+            // stop sliding after death
+            if (rb != null) rb.velocity = Vector3.zero;
+            return;
+        }
+
+        HandleMovement();
     }
 
     public void TakeDamage(int amount)
@@ -100,14 +113,27 @@ public class Player : MonoBehaviour
 
     void HandleMovement()
     {
-        float hAxis = Input.GetAxis("Horizontal");
-        float vAxis = Input.GetAxis("Vertical");
+        float hAxis = Input.GetAxisRaw("Horizontal");
+        float vAxis = Input.GetAxisRaw("Vertical");
 
-        Vector3 pos = transform.position;
-        pos.x += hAxis * speed * Time.deltaTime;
-        pos.z += vAxis * speed * Time.deltaTime;
-        transform.position = pos;
+        Vector3 inputDir = new Vector3(hAxis, 0f, vAxis);
+
+        // so diagonal isn’t faster
+        if (inputDir.sqrMagnitude > 1f)
+            inputDir.Normalize();
+
+        if (rb != null)
+        {
+            Vector3 vel = inputDir * speed;          // units per second
+            rb.velocity = new Vector3(vel.x, rb.velocity.y, vel.z);
+        }
+        else
+        {
+            // fallback (almost never used)
+            transform.position += inputDir * speed * Time.deltaTime;
+        }
     }
+
 
     void HandleRotation()
     {
@@ -120,9 +146,15 @@ public class Player : MonoBehaviour
 
             if (desiredDirection.sqrMagnitude > 0.001f)
             {
-                Quaternion targetRotation = Quaternion.LookRotation(desiredDirection);
-                targetRotation *= Quaternion.Euler(0, rotationOffsetY, 0);
-                transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 10f);
+                // Keep 'up' strictly vertical so we don't get any tilt
+                Quaternion targetRotation = Quaternion.LookRotation(desiredDirection, Vector3.up);
+                targetRotation *= Quaternion.Euler(0f, rotationOffsetY, 0f);
+
+                transform.rotation = Quaternion.Slerp(
+                    transform.rotation,
+                    targetRotation,
+                    Time.deltaTime * 10f
+                );
             }
 
             if (hardpoint != null)

@@ -30,10 +30,18 @@ public class Enemy : MonoBehaviour
     public float projectileSpawnHeight = 0.5f;
 
     private float nextShotTime;
+    private Rigidbody rb;
 
     void Start()
     {
         currentHealth = maxHealth;
+
+        rb = GetComponent<Rigidbody>();   // <-- NEW
+        if (rb != null)
+        {
+            rb.isKinematic = true;
+            rb.useGravity = false;
+        }
 
         bndCheck = GetComponent<BoundsCheck>();
         SetupBounds();
@@ -41,7 +49,6 @@ public class Enemy : MonoBehaviour
         float angle = Random.Range(0f, 360f) * Mathf.Deg2Rad;
         moveDir = new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle)).normalized;
 
-        // NEW: first shot time
         nextShotTime = Time.time + Random.Range(fireIntervalMin, fireIntervalMax);
     }
 
@@ -121,16 +128,27 @@ public class Enemy : MonoBehaviour
     }
 
     void OnTriggerEnter(Collider other)
+{
+    if (other.CompareTag("Player"))
     {
-        if (other.CompareTag("Player"))
+        Player player = other.GetComponent<Player>();
+        if (player != null)
         {
-            Player player = other.GetComponent<Player>();
-            if (player != null)
-            {
-                player.TakeDamage(1);   // lose 1 HP per bump
-            }
+            player.TakeDamage(1);   // lose 1 HP per bump
         }
     }
+    else if (other.CompareTag("Cover"))
+    {
+        // Simple 2D-style bounce on X/Z only
+        Vector3 toEnemy = transform.position - other.transform.position;
+        toEnemy.y = 0f;
+
+        if (Mathf.Abs(toEnemy.x) > Mathf.Abs(toEnemy.z))
+            moveDir.x *= -1;  // hit mostly from left/right
+        else
+            moveDir.z *= -1;  // hit mostly from front/back
+    }
+}
 
     void TryShootAtPlayer()
     {
@@ -169,4 +187,18 @@ public class Enemy : MonoBehaviour
 
         nextShotTime = Time.time + Random.Range(fireIntervalMin, fireIntervalMax);
     }
+
+    void OnCollisionEnter(Collision collision)
+{
+    if (collision.collider.CompareTag("Cover"))
+    {
+        // Use the first contact normal to reflect moveDir
+        ContactPoint cp = collision.contacts[0];
+        Vector3 normal = cp.normal;
+
+        // Reflect movement direction
+        moveDir = Vector3.Reflect(moveDir, normal);
+    }
+}
+
 }

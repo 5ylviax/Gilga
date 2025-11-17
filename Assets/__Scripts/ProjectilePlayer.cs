@@ -61,36 +61,54 @@ public class ProjectilePlayer : MonoBehaviour
     }
 
         void OnTriggerEnter(Collider other)
+{
+    // 1) Damage enemy
+    if (other.CompareTag("Enemy"))
     {
-        // 1) Damage enemy
-        if (other.CompareTag("Enemy"))
+        Enemy enemy = other.GetComponent<Enemy>();
+        if (enemy != null)
         {
-            Enemy enemy = other.GetComponent<Enemy>();
-            if (enemy != null)
-            {
-                enemy.TakeDamage(damage);
-            }
-
-            Destroy(gameObject);  // bullet disappears on hit
-            return;
+            enemy.TakeDamage(damage);
         }
 
-        // 2) Destroyable enemy projectile (red)
-        ProjectileEnemy enemyProj = other.GetComponent<ProjectileEnemy>();
-        if (enemyProj != null && enemyProj.destroyableByPlayer)
-        {
-            // Red shot: both projectiles disappear
-            Destroy(enemyProj.gameObject);
-            Destroy(gameObject);
-            return;
-        }
-
-        // 3) Default: bullet disappears on anything except player/platform
-        if (!other.CompareTag("Player") && !other.CompareTag("Platform"))
-        {
-            // This will also destroy when hitting future "Cover" cubes
-            Destroy(gameObject);
-        }
+        Destroy(gameObject);
+        return;
     }
+
+    // 2) Destroyable enemy projectile (red)
+    ProjectileEnemy enemyProj = other.GetComponent<ProjectileEnemy>();
+    if (enemyProj != null && enemyProj.destroyableByPlayer)
+    {
+        Destroy(enemyProj.gameObject);
+        Destroy(gameObject);
+        return;
+    }
+
+    // 3) Bounce off Cover
+    if (other.CompareTag("Cover"))
+    {
+        Rigidbody rb = GetComponent<Rigidbody>();
+        if (rb != null)
+        {
+            Vector3 v = rb.velocity;
+
+            if (Mathf.Abs(v.x) > Mathf.Abs(v.z))
+                v.x = -v.x;   // horizontal wall
+            else
+                v.z = -v.z;   // vertical wall
+
+            rb.velocity = v;
+        }
+        return;
+    }
+
+    // 4) Default: destroy on anything else (except player/platform)
+    if (!other.CompareTag("Player") && !other.CompareTag("Platform"))
+    {
+        Destroy(gameObject);
+    }
+}
+
+
 
 }

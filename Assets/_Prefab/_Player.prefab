@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 8720834354919008997}
   - component: {fileID: 5668197057680598336}
   - component: {fileID: 7587875396929425802}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Player
   m_TagString: Player
   m_Icon: {fileID: 0}
@@ -100,7 +100,7 @@ GameObject:
   - component: {fileID: 9118691766209358689}
   - component: {fileID: 9118691766209358692}
   - component: {fileID: 9118691766209358693}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: _Player
   m_TagString: Player
   m_Icon: {fileID: 0}
@@ -150,7 +150,7 @@ Rigidbody:
   m_AngularDrag: 0.05
   m_UseGravity: 1
   m_IsKinematic: 0
-  m_Interpolate: 0
+  m_Interpolate: 1
   m_Constraints: 116
   m_CollisionDetection: 0
 --- !u!114 &9118691766209358692
@@ -165,7 +165,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ad6b40d1e19eebd41b6347041d65391f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speed: 15
+  speed: 30
   groundMask:
     serializedVersion: 2
     m_Bits: 64
@@ -173,7 +173,7 @@ MonoBehaviour:
   hardpoint: {fileID: 9118691767279344787}
   projectilePrefab: {fileID: 718777457962277896, guid: a6ece521f79591d4f9c11ebb30b68e8b, type: 3}
   fireRate: 0.25
-  projectileSpeed: 60
+  projectileSpeed: 80
   maxHealth: 5
   shieldLevel: 1
 --- !u!114 &9118691766209358693
@@ -198,7 +198,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 9118691767279344787}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: hardpoint
   m_TagString: Untagged
   m_Icon: {fileID: 0}
