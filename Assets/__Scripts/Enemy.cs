@@ -4,18 +4,21 @@ using UnityEngine;
 
 public class Enemy : MonoBehaviour
 {
+    // ============================
+    // 1. VARIABLES
+    // ============================
     [Header("Health")]
     [Range(1, 5)]
-    public int maxHealth = 3;   // set this 1–5 in Inspector
+    public int maxHealth = 3;
     private int currentHealth;
 
     [Header("Movement Settings")]
     [Range(0f, 30f)]
-    public float speed = 15f;           // overall movement speed
-    public float bounceOffset = 0.2f;   // how far inside the bounds to bounce
+    public float speed = 15f;
+    public float bounceOffset = 0.2f;
     public bool debugBounds = false;
 
-    private Vector3 moveDir;           
+    private Vector3 moveDir;
     private BoundsCheck bndCheck;
     private Renderer platformRenderer;
     private float xMin, xMax, zMin, zMax;
@@ -32,11 +35,14 @@ public class Enemy : MonoBehaviour
     private float nextShotTime;
     private Rigidbody rb;
 
+    // ============================
+    // 2. START()
+    // ============================
     void Start()
     {
         currentHealth = maxHealth;
 
-        rb = GetComponent<Rigidbody>();   // <-- NEW
+        rb = GetComponent<Rigidbody>();
         if (rb != null)
         {
             rb.isKinematic = true;
@@ -46,12 +52,16 @@ public class Enemy : MonoBehaviour
         bndCheck = GetComponent<BoundsCheck>();
         SetupBounds();
 
+        // Random initial direction
         float angle = Random.Range(0f, 360f) * Mathf.Deg2Rad;
         moveDir = new Vector3(Mathf.Cos(angle), 0f, Mathf.Sin(angle)).normalized;
 
         nextShotTime = Time.time + Random.Range(fireIntervalMin, fireIntervalMax);
     }
 
+    // ============================
+    // 3. UPDATE()
+    // ============================
     void Update()
     {
         if (!boundsReady)
@@ -59,28 +69,35 @@ public class Enemy : MonoBehaviour
 
         if (boundsReady)
         {
-            Move();
-            TryShootAtPlayer();     // NEW
+            TryShootAtPlayer();
         }
     }
 
-    // ---- NEW: called by projectiles ----
+    // ============================
+    // 4. HEALTH & DEATH
+    // ============================
     public void TakeDamage(int amount)
     {
         currentHealth -= amount;
+
         if (currentHealth <= 0)
-        {
             Die();
-        }
     }
 
     void Die()
     {
-        // TODO: play VFX / SFX here if you want
+        // tell LevelManager this enemy died
+        if (LevelManager.S != null)
+        {
+            LevelManager.S.OnEnemyKilled(this);
+        }
+
         Destroy(gameObject);
     }
-    // ------------------------------------
 
+    // ============================
+    // 5. BOUND SETUP
+    // ============================
     void SetupBounds()
     {
         if (bndCheck == null || bndCheck.platform == null) return;
@@ -99,106 +116,105 @@ public class Enemy : MonoBehaviour
         zMin = platformBounds.min.z + halfD + bounceOffset;
         zMax = platformBounds.max.z - halfD - bounceOffset;
 
-        if (xMax > xMin && zMax > zMin)
-        {
-            boundsReady = true;
-            if (debugBounds)
-                Debug.Log($"Enemy bounds ready: X({xMin:F1},{xMax:F1}) Z({zMin:F1},{zMax:F1})");
-        }
+        boundsReady = true;
     }
 
-    void Move()
-    {
-        Vector3 pos = transform.position;
-        pos += moveDir * speed * Time.deltaTime;
-
-        if (pos.x <= xMin || pos.x >= xMax)
-        {
-            moveDir.x *= -1;
-            pos.x = Mathf.Clamp(pos.x, xMin, xMax);
-        }
-
-        if (pos.z <= zMin || pos.z >= zMax)
-        {
-            moveDir.z *= -1;
-            pos.z = Mathf.Clamp(pos.z, zMin, zMax);
-        }
-
-        transform.position = pos;
-    }
-
-    void OnTriggerEnter(Collider other)
+    // ============================
+    // 6. MOVEMENT + WALL BOUNCE
+    // ============================
+    // ============================
+// 6. MOVEMENT + WALL BOUNCE
+// ============================
+void MovePhysics()
 {
-    if (other.CompareTag("Player"))
-    {
-        Player player = other.GetComponent<Player>();
-        if (player != null)
-        {
-            player.TakeDamage(1);   // lose 1 HP per bump
-        }
-    }
-    else if (other.CompareTag("Cover"))
-    {
-        // Simple 2D-style bounce on X/Z only
-        Vector3 toEnemy = transform.position - other.transform.position;
-        toEnemy.y = 0f;
+    // Start from rigidbody position
+    Vector3 pos = rb.position;
 
-        if (Mathf.Abs(toEnemy.x) > Mathf.Abs(toEnemy.z))
-            moveDir.x *= -1;  // hit mostly from left/right
-        else
-            moveDir.z *= -1;  // hit mostly from front/back
+    // Use fixedDeltaTime for physics step
+    pos += moveDir * speed * Time.fixedDeltaTime;
+
+    // Bounce off platform edges
+    if (pos.x <= xMin || pos.x >= xMax)
+    {
+        moveDir.x *= -1;
+        pos.x = Mathf.Clamp(pos.x, xMin, xMax);
     }
+
+    if (pos.z <= zMin || pos.z >= zMax)
+    {
+        moveDir.z *= -1;
+        pos.z = Mathf.Clamp(pos.z, zMin, zMax);
+    }
+
+    // Actually move via Rigidbody so collisions work
+    rb.MovePosition(pos);
 }
 
+
+
+    // ============================
+    // 7. COLLISIONS  (ONLY THIS)
+    // ============================
+    void OnCollisionEnter(Collision collision)
+    {
+        Collider other = collision.collider;
+
+        // Player bump → damage Player
+        if (other.CompareTag("Player"))
+        {
+            Player p = other.GetComponent<Player>();
+            if (p != null)
+                p.TakeDamage(1);
+        }
+        // Cover hard bounce
+        else if (other.CompareTag("Cover"))
+        {
+            ContactPoint cp = collision.contacts[0];
+            moveDir = Vector3.Reflect(moveDir, cp.normal);
+        }
+    }
+
+    // ============================
+    // 8. SHOOTING AT PLAYER
+    // ============================
     void TryShootAtPlayer()
     {
         if (Time.time < nextShotTime) return;
-        if (Player.S == null) return;   // no player yet
+        if (Player.S == null) return;
 
         Vector3 dir = Player.S.transform.position - transform.position;
         dir.y = 0f;
 
-        if (dir.sqrMagnitude < 0.01f) return;  // too close / invalid
+        if (dir.sqrMagnitude < 0.01f) return;
 
         dir.Normalize();
         Quaternion rot = Quaternion.LookRotation(dir);
 
-        // Choose red or black projectile
         bool useRed = (Random.value < 0.5f);
-        GameObject prefabToUse = null;
+        GameObject projPrefab =
+            useRed ? redProjectilePrefab : blackProjectilePrefab;
 
-        if (useRed && redProjectilePrefab != null)
-            prefabToUse = redProjectilePrefab;
-        else if (!useRed && blackProjectilePrefab != null)
-            prefabToUse = blackProjectilePrefab;
+        if (projPrefab == null) return;
 
-        if (prefabToUse == null) return;
+        Vector3 spawnPos =
+            transform.position + dir * 1f + Vector3.up * projectileSpawnHeight;
 
-        Vector3 spawnPos = transform.position + dir * 1f + Vector3.up * projectileSpawnHeight;
-        GameObject projGO = Instantiate(prefabToUse, spawnPos, rot);
+        GameObject projGO = Instantiate(projPrefab, spawnPos, rot);
 
         ProjectileEnemy proj = projGO.GetComponent<ProjectileEnemy>();
         if (proj != null)
         {
             proj.speed = projectileSpeed;
-            proj.damage = 1;                   // enemy shots always do 1 dmg
-            proj.destroyableByPlayer = useRed; // red = destroyable, black = not
+            proj.damage = 1;
+            proj.destroyableByPlayer = useRed;
         }
 
         nextShotTime = Time.time + Random.Range(fireIntervalMin, fireIntervalMax);
     }
-
-    void OnCollisionEnter(Collision collision)
+    void FixedUpdate()
 {
-    if (collision.collider.CompareTag("Cover"))
-    {
-        // Use the first contact normal to reflect moveDir
-        ContactPoint cp = collision.contacts[0];
-        Vector3 normal = cp.normal;
-
-        // Reflect movement direction
-        moveDir = Vector3.Reflect(moveDir, normal);
-    }
+    if (!boundsReady || rb == null) return;
+    MovePhysics();
 }
 
 }
