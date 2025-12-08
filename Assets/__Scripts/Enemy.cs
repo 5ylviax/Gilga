@@ -4,9 +4,9 @@ using UnityEngine;
 
 public class Enemy : MonoBehaviour
 {
-    // ============================
-    // 1. VARIABLES
-    // ============================
+
+    [Header("Audio")]
+    public AudioSource deathSFX;
     [Header("Health")]
     [Range(1, 5)]
     public int maxHealth = 3;
@@ -35,9 +35,7 @@ public class Enemy : MonoBehaviour
     private float nextShotTime;
     private Rigidbody rb;
 
-    // ============================
     // 2. START()
-    // ============================
     void Start()
     {
         currentHealth = maxHealth;
@@ -59,9 +57,7 @@ public class Enemy : MonoBehaviour
         nextShotTime = Time.time + Random.Range(fireIntervalMin, fireIntervalMax);
     }
 
-    // ============================
     // 3. UPDATE()
-    // ============================
     void Update()
     {
         if (!boundsReady)
@@ -73,9 +69,7 @@ public class Enemy : MonoBehaviour
         }
     }
 
-    // ============================
     // 4. HEALTH & DEATH
-    // ============================
     public void TakeDamage(int amount)
     {
         currentHealth -= amount;
@@ -86,18 +80,21 @@ public class Enemy : MonoBehaviour
 
     void Die()
     {
+        // play death sound BEFORE destroying
+        if (deathSFX != null)
+        {
+            AudioSource.PlayClipAtPoint(deathSFX.clip, transform.position, deathSFX.volume);
+        }
         // tell LevelManager this enemy died
         if (LevelManager.S != null)
         {
             LevelManager.S.OnEnemyKilled(this);
         }
-
-        Destroy(gameObject);
+        // destroy enemy AFTER delay so sound can play
+        Destroy(gameObject,0.25f);
     }
 
-    // ============================
     // 5. BOUND SETUP
-    // ============================
     void SetupBounds()
     {
         if (bndCheck == null || bndCheck.platform == null) return;
@@ -119,12 +116,7 @@ public class Enemy : MonoBehaviour
         boundsReady = true;
     }
 
-    // ============================
     // 6. MOVEMENT + WALL BOUNCE
-    // ============================
-    // ============================
-// 6. MOVEMENT + WALL BOUNCE
-// ============================
 void MovePhysics()
 {
     // Start from rigidbody position
@@ -152,9 +144,7 @@ void MovePhysics()
 
 
 
-    // ============================
     // 7. COLLISIONS  (ONLY THIS)
-    // ============================
     void OnCollisionEnter(Collision collision)
     {
         Collider other = collision.collider;
@@ -172,11 +162,17 @@ void MovePhysics()
             ContactPoint cp = collision.contacts[0];
             moveDir = Vector3.Reflect(moveDir, cp.normal);
         }
+        else if (other.CompareTag("Projectile"))
+        {
+            if (ScoreManager.Instance != null)
+                ScoreManager.Instance.AddScore(10);
+
+            Destroy(other.gameObject);  // destroy the projectile
+            Destroy(gameObject);        // destroy this enemy
+        }
     }
 
-    // ============================
     // 8. SHOOTING AT PLAYER
-    // ============================
     void TryShootAtPlayer()
     {
         if (Time.time < nextShotTime) return;

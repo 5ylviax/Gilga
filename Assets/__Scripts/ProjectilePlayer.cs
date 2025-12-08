@@ -69,6 +69,11 @@ public class ProjectilePlayer : MonoBehaviour
         if (enemy != null)
         {
             enemy.TakeDamage(damage);
+
+            if(ScoreManager.Instance != null)
+                {
+                 ScoreManager.Instance.AddScore(10);   
+                }
         }
 
         Destroy(gameObject);

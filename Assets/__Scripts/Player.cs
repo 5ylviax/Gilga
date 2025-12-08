@@ -6,6 +6,8 @@ using UnityEngine.SceneManagement;   // <-- NEW
 public class Player : MonoBehaviour
 {
     public static Player S { get; private set; }
+    [Header("Audio")]
+    public AudioSource audioSource;
 
     [Header("Inscribed")]
     public float speed = 15;
@@ -160,6 +162,10 @@ public class Player : MonoBehaviour
         {
             nextFireTime = Time.time + fireRate;
 
+            if (audioSource != null && audioSource.clip != null)
+            {
+                audioSource.PlayOneShot(audioSource.clip);
+            }
             if (projectilePrefab != null && hardpoint != null)
             {
                 Vector3 spawnPos = hardpoint.position + hardpoint.forward * 1f;
